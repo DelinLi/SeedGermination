@@ -31,33 +31,31 @@ static domain_name_servers=192.168.31.1
 
 6. SSH login in  via `ssh seed@192.168.31.101` (192.168.31.10X, X=1 is set up here) when you and the raspberry both under the wifi named "WIFI"
 7. other setting ...
-	a. crontab -e
-	b. camera script   
+	a. camera script
+	<pre>
+	#!/bin/bash
 
-II. Clone the Rasperry Pi OS across different Rasperry Pis
+	DATE=$(date +"%Y-%m-%d_%H%M")
+	Host=`hostname`
+	Time=`echo $Host | sed 's/.*_//'`
+
+	raspistill -vf -hf -o ~/Documents/${Host}.${DATE}.jpg
+
+	sleep ${Time}m
+	scp  ~/Documents/${Host}.${DATE}.jpg   soy@raspberrypi:/home/soy/Documents/Pic/
+
+	## Get data transfer status and remove it if transfered to The MATRIX
+	status=$?
+	[ $status -eq 0 ] && rm ~/Documents/${Host}.${DATE}.jpg
+	</pre>
+	b. crontab -e `* */2 * * *  sh ~/Documents/Pic/work.sh` #every 2h conduct this script
+
+
+#### II. Clone the Rasperry Pi OS across different Rasperry Pis
 image the disk with [Disk Utility on Mac](https://gallaugher.com/make-a-copy-of-a-raspberry-pi-sd-card-mac/), rename the .cdr file to an iso file. Then
 
-III. In each clone, take picture every 2h
-
-`* */2 * * *  sh ~/Documents/Pic/work.sh` (crontab -e)
-
-then mv to clone 
-
-<pre>
-#!/bin/bash
-
-DATE=$(date +"%Y-%m-%d_%H%M")
-Host=`hostname`
-Time=`echo $Host | sed 's/.*_//'`
-
-raspistill -vf -hf -o ~/Documents/${Host}.${DATE}.jpg
-
-sleep ${Time}m
-scp  ~/Documents/${Host}.${DATE}.jpg   soy@raspberrypi:/home/soy/Documents/Pic/
-
-## Get data transfer status and remove it if transfered to The MATRIX
-status=$?
-[ $status -eq 0 ] && rm ~/Documents/${Host}.${DATE}.jpg
-</pre>
-
-
+#### III. 	In each clone, sets below:   
+1. Set up for ssh/scp w/o password
+1)  `ssh-keygen -t rsa` generate the key (*default press press press*)
+2)  add the public key (.ssh/id_rsa.pub) to **MATRIX** (file: .ssh/authorized_keys)
+BINGO! ssh username@HOSTNAME (example, soy@raspberrypi)
